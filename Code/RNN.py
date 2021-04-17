@@ -1,11 +1,8 @@
 """
-This entire file (LSTM.py) is a combination of the lstm.py and test.py file that
- can be found here:
-https://github.com/nicodjimenez/lstm
-Please note that github user nicodjimenez is the original creator of this
+This entire file (RNN.py) can be found here:
+https://github.com/Site1997/RNN-implementation/blob/master/rnn.py
+Please note that github user Site1997 is the original creator of this
 piece of code and that we are simply using it.
-Most (if not all) of our changes were to replace the example_0() function with
-run_lstm() to suit our needs for the project.
 """
 
 import numpy as np
