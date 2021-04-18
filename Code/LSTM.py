@@ -234,31 +234,6 @@ class ToyLossLayer:
         return diff
 
 
-# def example_0():
-#     # learns to repeat simple sequence from random inputs
-#     np.random.seed(0)
-#
-#     # parameters for input data dimension and lstm cell count
-#     mem_cell_ct = 100
-#     x_dim = 50
-#     lstm_param = LstmParam(mem_cell_ct, x_dim)
-#     lstm_net = LstmNetwork(lstm_param)
-#     y_list = [-0.5, 0.2, 0.1, -0.5]
-#     input_val_arr = [np.random.random(x_dim) for _ in y_list]
-#
-#     for cur_iter in range(100):
-#         print("iter", "%2s" % str(cur_iter), end=": ")
-#         for ind in range(len(y_list)):
-#             lstm_net.x_list_add(input_val_arr[ind])
-#
-#         print("y_pred = [" +
-#               ", ".join(["% 2.5f" % lstm_net.lstm_node_list[ind].state.h[0] for ind in range(len(y_list))]) +
-#               "]", end=", ")
-#
-#         loss = lstm_net.y_list_is(y_list, ToyLossLayer)
-#         print("loss:", "%.3e" % loss)
-#         lstm_param.apply_diff(lr=0.1)
-#         lstm_net.x_list_clear()
 def split_data(data, split=0.9):
     """
     Returns a split version of data (which should be a list
@@ -277,10 +252,10 @@ def split_data(data, split=0.9):
     index = math.floor(split * len(data))
     train = data[:index]
     validation = data[index:]
-    train_data = train[:len(train) / 2]
-    train_labels = train[len(train) / 2:]
-    valid_data = validation[:len(validation) / 2]
-    valid_labels = validation[len(validation) / 2:]
+    train_data = train[:len(train) // 2]
+    train_labels = train[len(train) // 2:]
+    valid_data = validation[:len(validation) // 2]
+    valid_labels = validation[len(validation) // 2:]
     # Modify training and validation data so that it may be used by the
     # algorithm
     for i in range(len(train_data)):
@@ -300,18 +275,8 @@ def extract_data():
     # TODO: This is where you get the contents of csv file and turn it into
     # TODO: a list of closing prices only
 
-    data = [1.34, 2.43, 0.3, 4.34]
+    data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
     return data
-
-
-def delete_this_later():
-    # TODO: Placeholder function. Delete this once extract_data actually works
-    # TODO: and split_data() is used as it should be in run_lstm()
-    input_var_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]),
-                     np.array([0.34643])]
-    y_list = [-0.5, 0.2, 0.1, -0.5]
-
-    return input_var_arr, y_list
 
 
 def plot_results(train_losses, valid_losses):
@@ -319,10 +284,8 @@ def plot_results(train_losses, valid_losses):
     Plots the training and validation losses of the LSTM algorithm over the
     epochs.
     """
-    # TODO: TO BE IMPLEMENTED IN A BIT
-
     plt.plot(train_losses, label='Training loss')
-    # plt.plot(valid_losses, label='Validation loss')
+    plt.plot(valid_losses, label='Validation loss')
     plt.title('Training and validation loss')
     plt.legend()
 
@@ -333,52 +296,46 @@ def run_lstm():
     """
     Trains this LSTM model to predict bitcoin prices.
     """
-    # TODO: Need to code so that there are 2 datasets, 1 train and 1 validation
-    # learns to repeat simple sequence from random inputs
-    # np.random.seed(0)
-
     # parameters for input data dimension and lstm cell count
     mem_cell_ct = 100  # cell count
     x_dim = 1  # dimension of input (probably should change to 1)
     lstm_param = LstmParam(mem_cell_ct, x_dim)
     lstm_net = LstmNetwork(lstm_param)
-    # y_list should be a list representing the sequence of the future Z bitcoin closing prices
-    # y_list = [-0.5, 0.2, 0.1, -0.5] # what the predictions should look like
-    # input_val_arr should be a list representing the sequence of the Z bitcoin closing prices that comes directly before y_list starts
-    # each element in input_val_arr should be np.array([   * actual element here *   ])
-    # input_val_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]), np.array([0.34643])]  # this is what our data should be represented as
-    input_val_arr, y_list = delete_this_later()
+
+    # Set up the training and validation data
+    data = extract_data()
+    train_data, train_labels, valid_data, valid_labels = split_data(data,
+                                                                    split=0.9)
+
+    # Set up other variables
     train_losses = []
     validation_losses = []
     epochs = 100
-    print(input_val_arr)
     for cur_iter in range(epochs):  # 100 epochs
         # First deal with training dataset
         print("iter", "%2s" % str(cur_iter), end=": ")
-        for ind in range(len(input_val_arr)):  # load dataset into lstm
-            lstm_net.x_list_add(input_val_arr[ind])
-
-        print("y_pred = [" +
-              ", ".join(
-                  ["% 2.5f" % lstm_net.lstm_node_list[ind].state.h[0] for ind in
-                   range(len(y_list))]) +
-              "]", end=", ")
-
-        loss = lstm_net.y_list_is(y_list, ToyLossLayer)
+        for ind in range(len(train_data)):  # load dataset into lstm
+            lstm_net.x_list_add(train_data[ind])
+        loss = lstm_net.y_list_is(train_labels, ToyLossLayer)
         train_losses.append(loss)
-        print("loss:", "%.3e" % loss)  # our loss
+        print("Training loss:", "%.3e" % loss, end=", ")  # our loss
         lstm_param.apply_diff(lr=0.1)
         lstm_net.x_list_clear()  # reset dataset for next iteration
 
         # Find y_pred and loss for the validation dataset
-    # print(train_losses)
-    # print("LOLOLOLOLOLOLOLOLOLOLOLOLOL")
-    # print(validation_losses)
-    # print(len(train_losses))
-    # print(len(validation_losses))
+        for i in range(len(valid_data)):
+            lstm_net.x_list_add(valid_data[i])
+        loss = lstm_net.y_list_is(valid_labels, ToyLossLayer)
+        validation_losses.append(loss)
+        print("Validation loss:", "%.3e" % loss, end=", ")
+        lstm_net.x_list_clear()  # reset dataset for next iteration
+        print("y_pred = [" +
+              ", ".join(
+                  ["% 2.5f" % lstm_net.lstm_node_list[ind].state.h[0] for ind in
+                   range(len(valid_labels))]) +
+              "]")
     plot_results(train_losses, validation_losses)  # Plot results
 
 
 if __name__ == "__main__":
-    # example_0()
     run_lstm()
