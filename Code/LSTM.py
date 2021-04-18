@@ -295,9 +295,10 @@ def extract_data():
     df_np = df.to_numpy()
     # print(df_np[0])
     new_df = df_np[:, 4]
-    data = new_df.tolist()
     # count the number of NaN values
     # print(np.count_nonzero(np.isnan(new_df)))
+    new_df = new_df[np.logical_not(np.isnan(new_df))]
+    data = new_df.tolist()
     return data
 
 
