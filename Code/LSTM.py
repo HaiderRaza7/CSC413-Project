@@ -258,26 +258,67 @@ class ToyLossLayer:
 #         print("loss:", "%.3e" % loss)
 #         lstm_param.apply_diff(lr=0.1)
 #         lstm_net.x_list_clear()
+def split_data(data, split=0.9):
+    """
+    Returns a split version of data (which should be a list
+    :param data: list containing the prices of the cryptocurrency in question
+    over time (separated by equal periods of time)
+    :param split: what fraction of the original dataset should be assigned to
+    the training dataset
+    :return: the training dataset, training labels, validation dataset, and
+    validation labels in that order.
+    """
+    if split >= 1.0:
+        print("Invalid split value")
+        return [], [], [], []
+    if len(data) % 2 == 1:  # this algorithm works best with even amount of data
+        data.pop()
+    index = math.floor(split * len(data))
+    train = data[:index]
+    validation = data[index:]
+    train_data = train[:len(train) / 2]
+    train_labels = train[len(train) / 2:]
+    valid_data = validation[:len(validation) / 2]
+    valid_labels = validation[len(validation) / 2:]
+    # Modify training and validation data so that it may be used by the
+    # algorithm
+    for i in range(len(train_data)):
+        train_data[i] = np.array([train_data[i]])
+    for j in range(len(valid_data)):
+        valid_data[j] = np.array([valid_data[j]])
+    return train_data, train_labels, valid_data, valid_labels
+
+
 def extract_data():
     """
     Extract the dataset from the csv file
-    :return: 2 things: the data to work on/predict with (must be a list of
-    1-dimensional, length = 1 np.array() objects) (input_var_arr) and the
-    sequence to predict (y_list).
+    :return: the list of closing prices of the cryptocurrency (recorded between
+    equal periods of time)
     """
     # TODO: IMPLEMENT
-    # TODO: This is where you get the contents of csv file and turn them into what input_val_arr should be
-    input_var_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]), np.array([0.34643])]
+    # TODO: This is where you get the contents of csv file and turn it into
+    # TODO: a list of closing prices only
+
+    data = [1.34, 2.43, 0.3, 4.34]
+    return data
+
+
+def delete_this_later():
+    # TODO: Placeholder function. Delete this once extract_data actually works
+    # TODO: and split_data() is used as it should be in run_lstm()
+    input_var_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]),
+                     np.array([0.34643])]
     y_list = [-0.5, 0.2, 0.1, -0.5]
+
     return input_var_arr, y_list
 
 
-def plot_results():
+def plot_results(train_losses, valid_losses, epochs):
     """
-    Plots the results of the LSTM model
+    Plots the training and validation losses of the LSTM algorithm over the
+    epochs.
     """
-    # TODO: IMPLEMENT THIS ASAP
-    # TODO: This is where you take,
+    # TODO: TO BE IMPLEMENTED IN A BIT
     pass
 
 
@@ -299,14 +340,15 @@ def run_lstm():
     # input_val_arr should be a list representing the sequence of the Z bitcoin closing prices that comes directly before y_list starts
     # each element in input_val_arr should be np.array([   * actual element here *   ])
     # input_val_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]), np.array([0.34643])]  # this is what our data should be represented as
-    input_val_arr, y_list = extract_data()
-    losses = []
-    accuracies = []
+    input_val_arr, y_list = delete_this_later()
+    train_losses = []
+    validation_losses = []
     epochs = 100
     print(input_val_arr)
     for cur_iter in range(epochs):  # 100 epochs
+        # First deal with training dataset
         print("iter", "%2s" % str(cur_iter), end=": ")
-        for ind in range(len(y_list)):  # load dataset into lstm
+        for ind in range(len(input_val_arr)):  # load dataset into lstm
             lstm_net.x_list_add(input_val_arr[ind])
 
         print("y_pred = [" +
@@ -316,19 +358,16 @@ def run_lstm():
               "]", end=", ")
 
         loss = lstm_net.y_list_is(y_list, ToyLossLayer)
-        losses.append(loss)
-        print("loss:", "%.3e" % loss, end=", ")  # our loss
-        correct = 0
-        total = 0
-        for i in range(len(y_list)):
-            if y_list[i] == lstm_net.lstm_node_list[i].state.h[0]:
-                correct = correct + 1
-            total = total + 1
-        accuracy = correct / total
-        accuracies.append(accuracy)
-        print("accuracy:", "%5f" % accuracy)  # our accuracy
+        train_losses.append(loss)
+        print("loss:", "%.3e" % loss)  # our loss
         lstm_param.apply_diff(lr=0.1)
         lstm_net.x_list_clear()  # reset dataset for next iteration
+
+        # Find y_pred and loss for the validation dataset
+
+
+
+
     plot_results()  # Plot results
 
 
