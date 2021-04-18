@@ -290,7 +290,14 @@ def extract_data():
     # TODO: This is where you get the contents of csv file and turn it into
     # TODO: a list of closing prices only
 
-    data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
+#     data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
+    df = pd.read_csv("/path/to/file/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
+    df_np = df.to_numpy()
+    # print(df_np[0])
+    new_df = df_np[:, 4]
+    data = new_df.tolist()
+    # count the number of NaN values
+    # print(np.count_nonzero(np.isnan(new_df)))
     return data
 
 
