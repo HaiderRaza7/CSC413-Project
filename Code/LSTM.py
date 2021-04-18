@@ -57,7 +57,7 @@ class LstmParam:
         self.bf_diff = np.zeros(mem_cell_ct)
         self.bo_diff = np.zeros(mem_cell_ct)
 
-    def apply_diff(self, lr=1):
+    def apply_diff(self, lr=1.0):
         self.wg -= lr * self.wg_diff
         self.wi -= lr * self.wi_diff
         self.wf -= lr * self.wf_diff
@@ -214,6 +214,7 @@ class LstmNetwork():
             h_prev = self.lstm_node_list[idx - 1].state.h
             self.lstm_node_list[idx].bottom_data_is(x, s_prev, h_prev)
 
+
 # Code from lstm.py ends here
 # Code from test.py begins here
 
@@ -257,14 +258,78 @@ class ToyLossLayer:
 #         print("loss:", "%.3e" % loss)
 #         lstm_param.apply_diff(lr=0.1)
 #         lstm_net.x_list_clear()
+def extract_data():
+    """
+    Extract the dataset from the csv file
+    :return: 2 things: the data to work on/predict with (must be a list of
+    1-dimensional, length = 1 np.array() objects) (input_var_arr) and the
+    sequence to predict (y_list).
+    """
+    # TODO: IMPLEMENT
+    # TODO: This is where you get the contents of csv file and turn them into what input_val_arr should be
+    input_var_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]), np.array([0.34643])]
+    y_list = [-0.5, 0.2, 0.1, -0.5]
+    return input_var_arr, y_list
+
+
+def plot_results():
+    """
+    Plots the results of the LSTM model
+    """
+    # TODO: IMPLEMENT THIS ASAP
+    # TODO: This is where you take,
+    pass
 
 
 def run_lstm():
     """
     Trains this LSTM model to predict bitcoin prices.
     """
-    # TODO: IMPLEMENT THIS ASAP
-    pass
+    # TODO: Need to code so that there are 2 datasets, 1 train and 1 validation
+    # learns to repeat simple sequence from random inputs
+    # np.random.seed(0)
+
+    # parameters for input data dimension and lstm cell count
+    mem_cell_ct = 100  # cell count
+    x_dim = 1  # dimension of input (probably should change to 1)
+    lstm_param = LstmParam(mem_cell_ct, x_dim)
+    lstm_net = LstmNetwork(lstm_param)
+    # y_list should be a list representing the sequence of the future Z bitcoin closing prices
+    # y_list = [-0.5, 0.2, 0.1, -0.5] # what the predictions should look like
+    # input_val_arr should be a list representing the sequence of the Z bitcoin closing prices that comes directly before y_list starts
+    # each element in input_val_arr should be np.array([   * actual element here *   ])
+    # input_val_arr = [np.array([0.34]), np.array([0.633]), np.array([0.773]), np.array([0.34643])]  # this is what our data should be represented as
+    input_val_arr, y_list = extract_data()
+    losses = []
+    accuracies = []
+    epochs = 100
+    print(input_val_arr)
+    for cur_iter in range(epochs):  # 100 epochs
+        print("iter", "%2s" % str(cur_iter), end=": ")
+        for ind in range(len(y_list)):  # load dataset into lstm
+            lstm_net.x_list_add(input_val_arr[ind])
+
+        print("y_pred = [" +
+              ", ".join(
+                  ["% 2.5f" % lstm_net.lstm_node_list[ind].state.h[0] for ind in
+                   range(len(y_list))]) +
+              "]", end=", ")
+
+        loss = lstm_net.y_list_is(y_list, ToyLossLayer)
+        losses.append(loss)
+        print("loss:", "%.3e" % loss, end=", ")  # our loss
+        correct = 0
+        total = 0
+        for i in range(len(y_list)):
+            if y_list[i] == lstm_net.lstm_node_list[i].state.h[0]:
+                correct = correct + 1
+            total = total + 1
+        accuracy = correct / total
+        accuracies.append(accuracy)
+        print("accuracy:", "%5f" % accuracy)  # our accuracy
+        lstm_param.apply_diff(lr=0.1)
+        lstm_net.x_list_clear()  # reset dataset for next iteration
+    plot_results()  # Plot results
 
 
 if __name__ == "__main__":
