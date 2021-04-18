@@ -12,6 +12,7 @@ import random
 
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 def sigmoid(x):
@@ -313,13 +314,19 @@ def delete_this_later():
     return input_var_arr, y_list
 
 
-def plot_results(train_losses, valid_losses, epochs):
+def plot_results(train_losses, valid_losses):
     """
     Plots the training and validation losses of the LSTM algorithm over the
     epochs.
     """
     # TODO: TO BE IMPLEMENTED IN A BIT
-    pass
+
+    plt.plot(train_losses, label='Training loss')
+    # plt.plot(valid_losses, label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+
+    plt.show()
 
 
 def run_lstm():
@@ -364,11 +371,12 @@ def run_lstm():
         lstm_net.x_list_clear()  # reset dataset for next iteration
 
         # Find y_pred and loss for the validation dataset
-
-
-
-
-    plot_results()  # Plot results
+    # print(train_losses)
+    # print("LOLOLOLOLOLOLOLOLOLOLOLOLOL")
+    # print(validation_losses)
+    # print(len(train_losses))
+    # print(len(validation_losses))
+    plot_results(train_losses, validation_losses)  # Plot results
 
 
 if __name__ == "__main__":
