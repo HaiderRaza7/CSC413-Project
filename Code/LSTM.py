@@ -234,6 +234,21 @@ class ToyLossLayer:
         return diff
 
 
+def extract_data_with_time_difference(data, time=60):
+    """
+    Return a list of prices with time minutes in between each element
+    :param data: the list of prices (on a per-minute frequency)
+    :param time: how many minutes between each price in the list (default=1hr)
+    :return: a list of prices with time minutes in between each element
+    """
+    new_data = []
+    counter = 0
+    while counter < len(data):
+        new_data.append(data[counter])
+        counter += time
+    return new_data
+
+
 def split_data(data, split=0.9):
     """
     Returns a split version of data (which should be a list
