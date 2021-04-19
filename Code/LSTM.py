@@ -290,15 +290,37 @@ def extract_data():
     # TODO: This is where you get the contents of csv file and turn it into
     # TODO: a list of closing prices only
 
-#     data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
+#   data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
+    
     df = pd.read_csv("/path/to/file/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
     df_np = df.to_numpy()
-    # print(df_np[0])
+   
+    # taking just the closing prices 
     new_df = df_np[:, 4]
-    # count the number of NaN values
-    # print(np.count_nonzero(np.isnan(new_df)))
-    new_df = new_df[np.logical_not(np.isnan(new_df))]
-    data = new_df.tolist()
+    # print(np.count_nonzero(np.isnan(new_df[4757376:4857376]))))
+    
+    # there are 131 NaN values in the last 100k values
+    # taking the last 100k values
+    new_dff = new_df[4757376:4857376]
+
+    # taking the consecutive 10 NaN values out manually
+    new_df2 = new_dff[:90522]
+    new_df2 = np.append(new_df2, new_dff[90531:])
+
+    # replace 121 (previously 131) NaN values with their successor's value
+    index_NaN = np.argwhere(np.isnan(new_df2))
+    index_NaN = index_NaN.reshape((index_NaN.shape[0],))
+    # print(index_NaN)
+
+    for i in range(len(index_NaN)):
+        j = index_NaN[i]
+        if j+1 in index_NaN:
+            new_df2[j] = new_df2[j+2]
+        else: # if j+1 is not NaN
+            new_df2[j] = new_df2[j + 1]
+    assert np.count_nonzero(np.isnan(new_df2)) == 0
+    # print(new_df2.shape)
+    data = new_df2.tolist()
     return data
 
 
