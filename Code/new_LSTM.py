@@ -80,7 +80,10 @@ def extract_data(split=0.9, val_test_split=0.5, tr=.9, v=0.9, te=0.9):
 
     # taking the consecutive 10 NaN values out manually
     new_df2 = new_dff[:90522]
-    new_df2 = np.append(new_df2, new_dff[90531:])
+    new_df2 = np.append(new_df2, new_df2[90531:])
+
+    #TODO: Remove this later! Set dataset to 10k sample for easy running
+    new_df2 = new_df2[:10000]
 
     # replace 121 (previously 131) NaN values with their successor's value
     index_NaN = np.argwhere(np.isnan(new_df2))
