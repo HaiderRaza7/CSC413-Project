@@ -9,7 +9,7 @@ run_lstm() to suit our needs for the project.
 """
 
 import random
-
+import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -259,12 +259,15 @@ def split_data(data, split=0.9):
     :return: the training dataset, training labels, validation dataset, and
     validation labels in that order.
     """
+    data = data[:1000]
     if split >= 1.0:
         print("Invalid split value")
         return [], [], [], []
     if len(data) % 2 == 1:  # this algorithm works best with even amount of data
         data.pop()
     index = math.floor(split * len(data))
+    if index % 2 == 1:
+        index -= 1
     train = data[:index]
     validation = data[index:]
     train_data = train[:len(train) // 2]
@@ -291,14 +294,16 @@ def extract_data():
     # TODO: a list of closing prices only
 
 #   data = [1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5, 1.34, 2.43, 0.3, 4.34, 4.3, 2.34, 3.45, 4.6, 8.65, 12.04, 7.34, 4.5]
-    
-    df = pd.read_csv("/path/to/file/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
+
+    # df = pd.read_csv("/path/to/file/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
+    df = pd.read_csv(
+        "/Users/haiderraza/Downloads/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
     df_np = df.to_numpy()
-   
-    # taking just the closing prices 
+
+    # taking just the closing prices
     new_df = df_np[:, 4]
     # print(np.count_nonzero(np.isnan(new_df[4757376:4857376]))))
-    
+
     # there are 131 NaN values in the last 100k values
     # taking the last 100k values
     new_dff = new_df[4757376:4857376]
@@ -322,6 +327,14 @@ def extract_data():
     # print(new_df2.shape)
     data = new_df2.tolist()
     return data
+
+
+def extract_test_data():
+    """
+    Extract the test dataset from the csv file
+    :return: the list of closing prices of the cryptocurrency (recorded between
+    equal periods of time)
+    """
 
 
 def plot_results(train_losses, valid_losses):
@@ -350,8 +363,8 @@ def run_lstm():
     # Set up the training and validation data
     data = extract_data()
     train_data, train_labels, valid_data, valid_labels = split_data(data,
-                                                                    split=0.9)
-
+                                                                    split=0.99)
+    print("%d %d %d %d", len(train_data), len(train_labels), len(valid_data), len(valid_labels))
     # Set up other variables
     train_losses = []
     validation_losses = []
