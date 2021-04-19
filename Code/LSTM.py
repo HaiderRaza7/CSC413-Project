@@ -249,7 +249,7 @@ def extract_data_with_time_difference(data, time=60):
     return new_data
 
 
-def split_data(data, split=0.9):
+def split_data(data, x_dim, split=0.9):
     """
     Returns a split version of data (which should be a list
     :param data: list containing the prices of the cryptocurrency in question
@@ -259,27 +259,41 @@ def split_data(data, split=0.9):
     :return: the training dataset, training labels, validation dataset, and
     validation labels in that order.
     """
-    data = data[:1000]
     if split >= 1.0:
         print("Invalid split value")
         return [], [], [], []
     if len(data) % 2 == 1:  # this algorithm works best with even amount of data
         data.pop()
     index = math.floor(split * len(data))
-    if index % 2 == 1:
-        index -= 1
     train = data[:index]
     validation = data[index:]
-    train_data = train[:len(train) // 2]
-    train_labels = train[len(train) // 2:]
-    valid_data = validation[:len(validation) // 2]
-    valid_labels = validation[len(validation) // 2:]
+    train_data = []
+    train_labels = []
+    valid_data = []
+    valid_labels = []
     # Modify training and validation data so that it may be used by the
     # algorithm
-    for i in range(len(train_data)):
-        train_data[i] = np.array([train_data[i]])
-    for j in range(len(valid_data)):
-        valid_data[j] = np.array([valid_data[j]])
+    max_i = math.floor(len(train) / (x_dim + 1))
+    max_j = math.floor(len(validation) / (x_dim + 1))
+    for i in range(max_i):
+        arr = []
+        for t in range(x_dim):
+            arr.append(train[i * (x_dim + 1) + t])
+        train_data.append(arr)
+        train_labels.append(train[i * x_dim])
+    for j in range(max_j):
+        arr = []
+        for v in range(x_dim):
+            arr.append(validation[j * (x_dim + 1) + v])
+        valid_data.append(arr)
+        valid_labels.append(train[j * x_dim])
+    # for i in range(len(train_data)):
+    #     train_data[i] = np.array([train_data[i]])
+    # for j in range(len(valid_data)):
+    #     valid_data[j] = np.array([valid_data[j]])
+    print(len(train_data))
+    print(len(train_data[0]))
+    print(len(train_labels))
     return train_data, train_labels, valid_data, valid_labels
 
 
@@ -356,15 +370,16 @@ def run_lstm():
     """
     # parameters for input data dimension and lstm cell count
     mem_cell_ct = 100  # cell count
-    x_dim = 1  # dimension of input (probably should change to 1)
+    x_dim = 20  # dimension of input (probably should change to 1)
     lstm_param = LstmParam(mem_cell_ct, x_dim)
     lstm_net = LstmNetwork(lstm_param)
 
     # Set up the training and validation data
     data = extract_data()
-    train_data, train_labels, valid_data, valid_labels = split_data(data,
-                                                                    split=0.99)
-    print("%d %d %d %d", len(train_data), len(train_labels), len(valid_data), len(valid_labels))
+    train_data, train_labels, valid_data, valid_labels = split_data(data, x_dim,
+                                                                    split=0.8)
+    print("%d %d %d %d", len(train_data), len(train_labels), len(valid_data),
+          len(valid_labels))
     # Set up other variables
     train_losses = []
     validation_losses = []
@@ -397,3 +412,4 @@ def run_lstm():
 
 if __name__ == "__main__":
     run_lstm()
+    print(np.random.random(50))
