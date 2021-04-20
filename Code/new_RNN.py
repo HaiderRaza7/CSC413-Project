@@ -108,7 +108,8 @@ def extract_data(size):
     assert np.count_nonzero(np.isnan(new_df2)) == 0
     # print(new_df2.shape)
     data_ = new_df2.tolist()
-    data_.resize((seq_length + 1, 1))
+    data_ = np.array(data_)
+    data_.resize((len(data_), 1))
 
     return data_
 
