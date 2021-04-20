@@ -311,7 +311,7 @@ def extract_data():
 
     # df = pd.read_csv("/path/to/file/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
     df = pd.read_csv(
-        "/Users/haiderraza/Desktop/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
+        "/Users/haiderraza/Downloads/bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv")
     df_np = df.to_numpy()
 
     # taking just the closing prices

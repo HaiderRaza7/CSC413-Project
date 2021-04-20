@@ -1,18 +1,3 @@
-"""
-***IMPORTANT***
-When running this code, change the parameter of the function on line 80
-to be the string of the path to the file containing our dataset. The file name
-is called bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv.
-
-This code was crafted primarily from the code provided on this site:
-https://stackabuse.com/time-series-prediction-using-lstm-with-pytorch-in-python/
-The blog containing these code pieces was made by Usman Malik.
-
-Most of the code below was from this site with the exception of extract_data(),
-plot_results(), and a small portion of run_lstm_network().
-"""
-
-
 import matplotlib
 import torch
 import torch.nn as nn
@@ -55,13 +40,30 @@ def create_inout_sequences(input_data, tw):
     return inout_seq
 
 
-def extract_data(size, num_values_to_predict):
+def split_data(data, split):
+    """
+    Split data appropriately and return the split lists.
+    :param data: list to be split appropriately.
+    :param split: portion of data to be dedicated to the first list.
+    :return: the split lists.
+    """
+    index = math.floor(len(data) * split)
+    first = data[:index]
+    second = data[index:]
+    return first, second
+
+
+def extract_data(split=0.9, val_test_split=0.5, tr=.9, v=0.9, te=0.9):
     """
     Extract data and return it in the correct format.
-    :param size: how large the dataset should be.
-    :param num_values_to_predict: number of future values to predict.
+    :param split: portion of dataset to be dedicated to the training set.
+    :param val_test_split: portion of the remaining dataset to be dedicated to the
+    validation set.
+    :param tr: portion of training set to be dedicated as data points.
+    :param v: portion of validation set to be dedicated as data points.
+    :param te: portion of testing set to be dedicated as data points.
     :return: the list of closing prices of the cryptocurrency (recorded between
-    equal periods of time) (in 2 lists: dataset and test labels).
+    equal periods of time) (6 lists).
     """
     # enter correct path to the dataset to be used
     df = pd.read_csv(
@@ -80,8 +82,8 @@ def extract_data(size, num_values_to_predict):
     new_df2 = new_dff[:90522]
     new_df2 = np.append(new_df2, new_df2[90531:])
 
-    # Set dataset size
-    new_df2 = new_df2[len(new_df2) - size:]
+    #TODO: Remove this later! Set dataset to 10k sample for easy running
+    new_df2 = new_df2[:10000]
 
     # replace 121 (previously 131) NaN values with their successor's value
     index_NaN = np.argwhere(np.isnan(new_df2))
@@ -98,30 +100,27 @@ def extract_data(size, num_values_to_predict):
     # print(new_df2.shape)
     data = new_df2.tolist()
 
-    return data[:len(data) - num_values_to_predict], \
-           data[len(data) - num_values_to_predict:]
+    # Now that we have the data, time to split into the datasets
+    train, rest = split_data(data, split)
+    validation, test = split_data(rest, val_test_split)
+
+    # Split each dataset into data and labels
+    # train_data, train_labels = split_data(train, tr)
+    # valid_data, valid_labels = split_data(validation, v)
+    # test_data, test_labels = split_data(test, te)
+    #
+    # return train_data, train_labels, valid_data, valid_labels, test_data, \
+    #        train_labels
+
+    train = np.array(train)
+    validation = np.array(validation)
+    test = np.array(test)
+
+    return train, validation, test
 
 
-def plot_results(losses):
-    """
-    Plot the losses over epochs.
-    :param losses: losses of the model.
-    """
-    plt.plot(losses, label='Training loss')
-    plt.title('Training loss over epochs')
-    plt.xlabel('Epochs', fontsize=40)
-    plt.legend()
-
-    plt.show()
-
-
-def run_lstm_network(size, num_values_to_predict):
-    """
-    Run the lstm network
-    :param size: size of the dataset to deal with
-    :param num_values_to_predict: number of values to predict into the future
-    """
-    train_data, test_labels = extract_data(size, num_values_to_predict)
+def temp():
+    train_data, valid_data, test_data = extract_data()
     # Normalize the training dataset for time series predictions
     scaler = MinMaxScaler(feature_range=(-1, 1))
     train_data_normalized = scaler.fit_transform(train_data.reshape(-1, 1))
@@ -130,7 +129,7 @@ def run_lstm_network(size, num_values_to_predict):
     train_data_normalized = torch.FloatTensor(train_data_normalized).view(-1)
 
     # Number of future values to predict
-    train_window = num_values_to_predict
+    train_window = 12
 
     # Create inout sequences
     train_inout_seq = create_inout_sequences(train_data_normalized,
@@ -142,10 +141,9 @@ def run_lstm_network(size, num_values_to_predict):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # Train the model
-    epochs = 100
+    epochs = 150
     single_loss = 0  # Initialize just to remove warnings
-    train_losses = []
-    for i in range(1, epochs + 1):
+    for i in range(epochs):
         for seq, labels in train_inout_seq:
             optimizer.zero_grad()
             model.hidden_cell = (torch.zeros(1, 1, model.hidden_layer_size),
@@ -156,15 +154,18 @@ def run_lstm_network(size, num_values_to_predict):
             single_loss = loss_function(y_pred, labels)
             single_loss.backward()
             optimizer.step()
-        print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
-        train_losses.append(single_loss.item())
+
+        if i % 25 == 1:
+            print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
+
+    print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
 
 
     # Run algorithm on testing set
-    fut_pred = num_values_to_predict
+    fut_pred = 12
 
     test_inputs = train_data_normalized[-train_window:].tolist()
-    # print(test_inputs)
+    print(test_inputs)
 
     model.eval()
 
@@ -179,20 +180,5 @@ def run_lstm_network(size, num_values_to_predict):
         np.array(test_inputs[train_window:]).reshape(-1, 1))
     print(actual_predictions)
 
-    # Calculate and print test loss
-    test_loss = 0
-    for i in range(num_values_to_predict):
-        test_loss += (actual_predictions[i][0] - test_labels[i]) ** 2
-    print(f'Test loss: {test_loss:10.10f}')
 
-    # Plot the training losses
-    plot_results(train_losses)
-
-
-# Run 4 experiments
-
-
-run_lstm_network(5000, 1)  # Use small dataset and make one prediction
-run_lstm_network(5000, 10)  # Use small dataset and make 10 predictions into the future
-run_lstm_network(30000, 1)  # Use large dataset and make one prediction
-run_lstm_network(30000, 10)  # Use large dataset and make 10 predictions into the future
+temp()
