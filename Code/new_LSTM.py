@@ -122,6 +122,7 @@ def run_lstm_network(size, num_values_to_predict):
     :param num_values_to_predict: number of values to predict into the future
     """
     train_data, test_labels = extract_data(size, num_values_to_predict)
+
     # Normalize the training dataset for time series predictions
     scaler = MinMaxScaler(feature_range=(-1, 1))
     train_data_normalized = scaler.fit_transform(train_data.reshape(-1, 1))
@@ -131,6 +132,11 @@ def run_lstm_network(size, num_values_to_predict):
 
     # Number of future values to predict
     train_window = num_values_to_predict
+
+    # Normalize test labels
+    data_normalized = train_data + test_labels
+    data_normalized = scaler.fit_transform(data_normalized.reshape(-1, 1))
+    test_labels_normalized = data_normalized[-train_window:].tolist()
 
     # Create inout sequences
     train_inout_seq = create_inout_sequences(train_data_normalized,
@@ -175,14 +181,14 @@ def run_lstm_network(size, num_values_to_predict):
                             torch.zeros(1, 1, model.hidden_layer_size))
             test_inputs.append(model(seq).item())
 
-    actual_predictions = scaler.inverse_transform(
-        np.array(test_inputs[train_window:]).reshape(-1, 1))
-    print(actual_predictions)
+    # actual_predictions = scaler.inverse_transform(
+    #     np.array(test_inputs[train_window:]).reshape(-1, 1))
+    # print(actual_predictions)
 
     # Calculate and print test loss
     test_loss = 0
     for i in range(num_values_to_predict):
-        test_loss += (actual_predictions[i][0] - test_labels[i]) ** 2
+        test_loss += (test_inputs[i] - test_labels_normalized[i][0]) ** 2
     print(f'Test loss: {test_loss:10.10f}')
 
     # Plot the training losses
