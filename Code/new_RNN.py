@@ -1,3 +1,18 @@
+"""
+***IMPORTANT***
+When running this code, change the parameter of the function on line 78/79
+to be the string of the path to the file containing our dataset. The file name
+is called bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv.
+
+This code was crafted primarily from the code provided on this site:
+https://github.com/Nishil07/Simple-Rnn-for-my-first-Medium-blog/blob/master/Simple_RNN.ipynb
+These code pieces were made by Nishil07.
+
+Most of the code below was from this site with the exception of extract_data(),
+plot_results(), and a decent portion of train_and_run().
+"""
+
+
 import matplotlib
 import torch
 from jedi.api.refactoring import inline
@@ -158,6 +173,8 @@ def train_and_test(rnn, n_steps, size):
     testing_loss = criterion(prediction, y_tensor)
 
     return rnn, training_losses, testing_loss
+
+# TODO: Run the code with size_ = 5000 and size_ = 30000 when testing!
 
 
 size_ = 5000  # Try with 30000 as well!

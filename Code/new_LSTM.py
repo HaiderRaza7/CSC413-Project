@@ -1,6 +1,6 @@
 """
 ***IMPORTANT***
-When running this code, change the parameter of the function on line 80
+When running this code, change the parameter of the function on line 67/68
 to be the string of the path to the file containing our dataset. The file name
 is called bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv.
 
@@ -189,7 +189,7 @@ def run_lstm_network(size, num_values_to_predict):
     plot_results(train_losses)
 
 
-# Run 4 experiments
+# TODO: Run this file in order to run all 4 experiments!
 
 
 run_lstm_network(5000, 1)  # Use small dataset and make one prediction
