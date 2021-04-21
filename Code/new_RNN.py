@@ -53,6 +53,17 @@ class RNN(nn.Module):
         return output, hidden
 
 
+def criterion(prediction, label):
+    """
+    Alternative function to nn.MSELoss().
+    Compute and return loss
+    :param: prediction: The prediction of a value.
+    :param: label: The true value.
+    :return: loss
+    """
+    return (prediction - label)**2
+
+
 def plot_results(losses):
     """
     Plot the losses over epochs.
@@ -143,7 +154,7 @@ def train_and_test(rnn, n_steps, size):
         hidden = hidden.data
 
         # calculate the loss
-        loss = criterion(prediction, y_tensor)
+        loss = criterion(prediction[0][0], y_tensor[len(y) - 1][0])
         # zero gradients
         optimizer.zero_grad()
         # perform backprop and update weights
@@ -171,7 +182,7 @@ def train_and_test(rnn, n_steps, size):
     hidden = hidden.data
 
     # calculate the loss
-    testing_loss = criterion(prediction, y_tensor)
+    testing_loss = criterion(prediction[0][0], y_tensor[len(y) - 1][0])
 
     return rnn, training_losses, testing_loss
 
@@ -195,7 +206,7 @@ rnn_ = RNN(input_size, output_size, hidden_dim, n_layers)
 # print(rnn)
 
 # MSE loss and Adam optimizer with a learning rate of 0.001
-criterion = nn.MSELoss()
+# criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(rnn_.parameters(), lr=0.001)
 
 # train the rnn and monitor results
