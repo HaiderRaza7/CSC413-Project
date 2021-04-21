@@ -143,7 +143,7 @@ def train_and_test(rnn, n_steps, size):
         hidden = hidden.data
 
         # calculate the loss
-        loss = criterion(prediction, y_tensor)
+        loss = criterion(prediction[0][0], y_tensor[0][0])
         # zero gradients
         optimizer.zero_grad()
         # perform backprop and update weights
@@ -171,7 +171,7 @@ def train_and_test(rnn, n_steps, size):
     hidden = hidden.data
 
     # calculate the loss
-    testing_loss = criterion(prediction, y_tensor)
+    testing_loss = criterion(prediction[0][0], y_tensor[0][0])
 
     return rnn, training_losses, testing_loss
 
