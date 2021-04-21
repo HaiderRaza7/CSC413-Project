@@ -16,6 +16,7 @@ plot_results(), and a decent portion of train_and_run().
 import matplotlib
 import torch
 from jedi.api.refactoring import inline
+from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 import numpy as np
 import pandas as pd
@@ -53,17 +54,6 @@ class RNN(nn.Module):
         return output, hidden
 
 
-def criterion(prediction, label):
-    """
-    Alternative function to nn.MSELoss().
-    Compute and return loss
-    :param: prediction: The prediction of a value.
-    :param: label: The true value.
-    :return: loss
-    """
-    return (prediction - label)**2
-
-
 def plot_results(losses):
     """
     Plot the losses over epochs.
@@ -81,7 +71,6 @@ def extract_data(size):
     """
     Extract data and return it in the correct format.
     :param size: how large the dataset should be.
-    :param num_values_to_predict: number of future values to predict.
     :return: the list of closing prices of the cryptocurrency (recorded between
     equal periods of time) (in 2 lists: dataset and test labels).
     """
@@ -127,11 +116,18 @@ def extract_data(size):
 
 # train the RNN
 def train_and_test(rnn, n_steps, size):
+    dataset = extract_data(size)
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    data_normalized = scaler.fit_transform(dataset.reshape(-1, 1))
+    data_normalized = torch.FloatTensor(data_normalized).view(-1)
+    data_normalized = data_normalized.tolist()
+    data_normalized = np.array(data_normalized)
+    data_normalized.resize((len(data_normalized), 1))
+
     # initialize the hidden state
     hidden = None
-    data = extract_data(size)
-    test_data = data[len(data) - (seq_length + 1):]
-    data = data[:len(data) - (seq_length + 1)]
+    test_data = data_normalized[len(data_normalized) - (seq_length + 1):]
+    data = data_normalized[:len(data_normalized) - (seq_length + 1)]
     training_losses = []
     for step in range(n_steps):
         # defining the training data
@@ -198,7 +194,7 @@ seq_length = math.floor(size_ / (n_steps_ + 1)) - 1
 # decide on hyperparameters
 input_size = 1
 output_size = 1
-hidden_dim = 32
+hidden_dim = 100
 n_layers = 1
 
 # instantiate an RNN
@@ -206,13 +202,13 @@ rnn_ = RNN(input_size, output_size, hidden_dim, n_layers)
 # print(rnn)
 
 # MSE loss and Adam optimizer with a learning rate of 0.001
-# criterion = nn.MSELoss()
+criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(rnn_.parameters(), lr=0.001)
 
 # train the rnn and monitor results
-trained_rnn, training_losses, test_loss = train_and_test(rnn_, n_steps_, size_)
+trained_rnn, training_losses_, test_loss = train_and_test(rnn_, n_steps_, size_)
 
 # Display losses
 print(f'Testing loss: {test_loss}')
 
-plot_results(training_losses)
+plot_results(training_losses_)
